@@ -1,0 +1,47 @@
+#Use K-means clustering
+#Use elbow method to find a good number of clusters
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set(style="white", color_codes=True)
+import warnings
+warnings.filterwarnings("ignore")
+
+dataset = pd.read_csv('CC.csv')
+x = dataset.iloc[:,1:]
+x = x.apply(lambda x: x.fillna(x.mean()),axis=0)
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+# Fit on training set only.
+scaler.fit(x)
+x_scaler = scaler.transform(x)
+
+##building the model
+from sklearn.cluster import KMeans
+nclusters = 4 # this is the k in kmeans
+km = KMeans(n_clusters=nclusters)
+km.fit(x_scaler)
+
+
+# predict the cluster for each data point
+y_cluster_kmeans = km.predict(x_scaler)
+from sklearn import metrics
+score = metrics.silhouette_score(x_scaler, y_cluster_kmeans)
+print("The Silhouette Score is: ", score)
+
+
+
+#elbow plot
+wcss = []
+for i in range(1,11):
+    kmeans = KMeans(n_clusters=i, max_iter=300, random_state=0)
+    kmeans.fit(x)
+    wcss.append(kmeans.inertia_)
+
+plt.plot(range(1,11),wcss)
+plt.title("Elbow Method")
+plt.xlabel("# of clusters")
+plt.ylabel("WCSS")
+plt.show()
